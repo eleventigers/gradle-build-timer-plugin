@@ -30,7 +30,7 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
 
     @Override
     void buildFinished(BuildResult result) {
-        printf "Task timings over %7sms:\n", REPORT_ABOVE_MS
+        printf "Task timings over %sms:\n", REPORT_ABOVE_MS
         timings.each { timing ->
             if (timing[0] >= REPORT_ABOVE_MS) {
                 printf "%7sms  %s\n", timing
