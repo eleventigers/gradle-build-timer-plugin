@@ -13,7 +13,7 @@ apply plugin: 'groovy'
 apply plugin: 'maven'
 
 group = 'net.jokubasdargis.buildtimer'
-version = '0.1.0-SNAPSHOT'
+version = '0.1.0'
 
 dependencies {
     repositories {

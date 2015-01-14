@@ -9,7 +9,6 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.TaskState
 import org.gradle.util.Clock;
 
-// Log timings per task.
 class TimingsListener implements TaskExecutionListener, BuildListener {
 
     private static final long REPORT_ABOVE_MS = 50L;
@@ -31,7 +30,7 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
 
     @Override
     void buildFinished(BuildResult result) {
-        println "Task timings:"
+        printf "Task timings over %7sms:\n", REPORT_ABOVE_MS
         timings.each { timing ->
             if (timing[0] >= REPORT_ABOVE_MS) {
                 printf "%7sms  %s\n", timing
