@@ -1,7 +1,7 @@
 Gradle Build Timer Plugin
 =========================
 
-A Gradle plugin which reports timings of a project build and individual project tasks. Now you will be able to see what tasks take the longest to run:
+A Gradle plugin which reports timings of a project build and individual project tasks. See what tasks take the longest to run:
 
 ```
 Task timings over 50ms:
