@@ -1,0 +1,79 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7.1'
+    }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'nexus'
+
+group = 'net.jokubasdargis.buildtimer'
+version = '0.1.0-SNAPSHOT'
+
+dependencies {
+    repositories {
+        mavenCentral()
+    }
+
+    compile gradleApi()
+    compile localGroovy()
+
+    testCompile 'junit:junit:4.10'
+    testCompile 'org.easytesting:fest-assert-core:2.0M10'
+}
+
+
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = 'gradle-plugin'
+    }
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        pom.artifactId = 'gradle-plugin'
+        repository(url: uri('../maven-test-repo'))
+    }
+}
+
+modifyPom {
+    project {
+        name 'Gradle Build Timer Plugin'
+        description "A Gradle plugin which reports timings of a project build and individual project tasks"
+        url 'https://github.com/eleventigers/gradle-build-timer-plugin'
+        inceptionYear '2015'
+
+        scm {
+            url 'https://github.com/eleventigers/gradle-build-timer-plugin'
+            connection 'scm:git:git://github.com/eleventigers/gradle-build-timer-plugin.git'
+            developerConnection 'scm:git:ssh://git@github.com/eleventigers/gradle-build-timer-plugin.git'
+        }
+
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+
+        developers {
+            developer {
+                id 'eleventigers'
+                name 'Jokubas Dargis'
+                email 'jokubas@obviousengine.com'
+            }
+        }
+
+        organization {
+            name 'Obvious Engineering, Ltd.'
+            url 'http://obviousengine.com/'
+        }
+    }
+}
