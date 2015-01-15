@@ -17,10 +17,6 @@ Task timings over 50ms:
 
 Usage
 ----
-Add this temporary repository to your `buildscript`'s `repositaries` section:
-```groovy
-maven { url 'https://github.com/eleventigers/maven-repository/raw/master/' }
-```
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
 classpath 'net.jokubasdargis.buildtimer:gradle-plugin:0.1.0'
