@@ -11,10 +11,16 @@ import org.gradle.util.Clock;
 
 class TimingsListener implements TaskExecutionListener, BuildListener {
 
-    private static final long REPORT_ABOVE_MS = 50L;
+    final long reportAbove;
 
     private Clock clock
     private timings = []
+
+    private boolean reportWhenFinished;
+
+    TimingsListener(long reportAbove) {
+        this.reportAbove = reportAbove;
+    }
 
     @Override
     void beforeExecute(Task task) {
@@ -25,15 +31,20 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
     void afterExecute(Task task, TaskState taskState) {
         def ms = clock.timeInMs
         timings.add([ms, task.path])
-        task.project.logger.warn "${task.path} took ${ms}ms"
+        if (ms > reportAbove) {
+            reportWhenFinished = true;
+            task.project.logger.warn "${task.path} took ${ms}ms"
+        }
     }
 
     @Override
     void buildFinished(BuildResult result) {
-        printf "Task timings over %sms:\n", REPORT_ABOVE_MS
-        timings.each { timing ->
-            if (timing[0] >= REPORT_ABOVE_MS) {
-                printf "%7sms  %s\n", timing
+        if (reportWhenFinished) {
+            printf "Task timings over %sms:\n", reportAbove
+            timings.each { timing ->
+                if (timing[0] > reportAbove) {
+                    printf "%7sms  %s\n", timing
+                }
             }
         }
     }

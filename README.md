@@ -18,10 +18,21 @@ Task timings over 50ms:
 Usage
 ----
 Add the plugin to your `buildscript`'s `dependencies` section:
+
 ```groovy
 classpath 'net.jokubasdargis.buildtimer:gradle-plugin:0.1.0'
 ```
+
 Apply the `build-timer` plugin:
+
 ```groovy
 apply plugin: 'net.jokubasdargis.build-timer'
+```
+
+Optionally configure the lowest time threshold (in ms) this plugin should report above:
+
+```groovy
+buildTimer {
+    reportAbove: 100L // Default is 50L
+}
 ```
