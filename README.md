@@ -33,6 +33,6 @@ Optionally configure the lowest time threshold (in ms) this plugin should report
 
 ```groovy
 buildTimer {
-    reportAbove: 100L // Default is 50L
+    reportAbove = 100L // Default is 50L
 }
 ```
