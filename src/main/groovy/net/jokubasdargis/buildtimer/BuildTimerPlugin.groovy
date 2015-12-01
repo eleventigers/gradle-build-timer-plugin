@@ -5,22 +5,12 @@ import org.gradle.api.Project
 
 class BuildTimerPlugin implements Plugin<Project> {
 
+    private static TimingsListener timingsListener = new TimingsListener()
+
     @Override
     void apply(Project project) {
         project.extensions.create(BuildTimerPluginExtension.NAME, BuildTimerPluginExtension)
-        project.afterEvaluate {
-            addTimingsListener(project)
-        }
+        project.gradle.addListener(timingsListener)
     }
 
-    static TimingsListener addTimingsListener(Project project) {
-        final BuildTimerPluginExtension extension = project.extensions
-                .findByType(BuildTimerPluginExtension);
-        final long reportAbove = extension != null ?
-                extension.reportAbove : BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE;
-        final TimingsListener listener = new TimingsListener(reportAbove);
-        project.gradle.addListener(listener)
-
-        return listener
-    }
 }

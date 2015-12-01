@@ -7,50 +7,43 @@ import org.gradle.api.execution.TaskExecutionListener
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.TaskState
-import org.gradle.util.Clock;
+import org.gradle.util.Clock
 
 class TimingsListener implements TaskExecutionListener, BuildListener {
 
-    final long reportAbove
-
-    private Clock clock
-    private timings = []
-
-    private boolean reportWhenFinished
-
-    TimingsListener(long reportAbove) {
-        this.reportAbove = reportAbove
-    }
+    private Map<Task, Timing> timings = Collections.synchronizedMap(new LinkedHashMap())
 
     @Override
     void beforeExecute(Task task) {
-        clock = new Clock()
+        timings.put(task, new Timing(task))
     }
 
     @Override
     void afterExecute(Task task, TaskState taskState) {
-        def ms = clock.timeInMs
-        timings.add([ms, task.path])
-        if (shouldReport(ms)) {
-            reportWhenFinished = true
-            task.project.logger.warn "${task.path} took ${ms}ms"
+        Timing timing = timings.get(task)
+
+        if (timing) {
+            timing.complete()
+
+            if (timing.report) {
+                task.project.logger.warn "${timing.path} took ${timing.ms}ms"
+            }
         }
     }
 
     @Override
     void buildFinished(BuildResult result) {
+        boolean reportWhenFinished = timings.values().find { Timing timing -> timing.report }
+
         if (reportWhenFinished) {
-            printf "Task timings over %sms:\n", reportAbove
-            timings.each { timing ->
-                if (shouldReport(timing[0])) {
-                    printf "%7sms  %s\n", timing
+            println "Task timings over threshold:\n"
+            timings.values().each { Timing timing ->
+                if (timing.report) {
+                    printf "%7sms  %s\n", [timing.ms, timing.path]
                 }
             }
         }
-    }
-
-    private boolean shouldReport(long timing) {
-        return timing > reportAbove
+        timings.clear()
     }
 
     @Override
@@ -64,4 +57,34 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
 
     @Override
     void settingsEvaluated(Settings settings) {}
+
+
+    private static class Timing {
+
+        private Task task
+        private Clock clock
+        private boolean report
+        private long ms
+
+        Timing(Task task) {
+            this.task = task
+            this.clock = new Clock()
+        }
+
+        String getPath() {
+            task.path
+        }
+
+        void complete() {
+            ms = clock.timeInMs
+            report = (ms > getReportAboveForTask())
+        }
+
+        private long getReportAboveForTask() {
+            BuildTimerPluginExtension extension = task.project.extensions.findByType(BuildTimerPluginExtension)
+            extension?.reportAbove ?: BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE
+        }
+
+    }
+
 }
