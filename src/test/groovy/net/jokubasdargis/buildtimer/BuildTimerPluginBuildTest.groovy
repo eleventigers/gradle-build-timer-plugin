@@ -14,20 +14,15 @@ class BuildTimerPluginBuildTest {
     @Rule public final TemporaryFolder testProjectDir = new TemporaryFolder()
 
     File buildFile
-    List<File> pluginClasspath
 
     @Before
     public void setUp() {
         buildFile = testProjectDir.newFile('build.gradle')
+    }
 
-        def pluginClasspathResource = getClass()
-                .classLoader.findResource("plugin-classpath.txt")
-        if (pluginClasspathResource == null) {
-            throw new IllegalStateException(
-                    "Did not find plugin classpath resource, run `testClasses` build task.")
-        }
-
-        pluginClasspath = pluginClasspathResource.readLines().collect { new File(it) }
+    private List<File> getPluginClasspath() {
+        System.getProperty("java.class.path").split(File.pathSeparator)
+                .collect { new File(it) }
     }
 
     @Test
