@@ -11,12 +11,14 @@ class BuildTimerPluginTest {
     public void pluginApplies() {
         Project project = ProjectBuilder.builder().build()
         project.apply plugin: 'net.jokubasdargis.build-timer'
+
+        assert project.getPluginManager().hasPlugin('net.jokubasdargis.build-timer')
     }
 
     @Test
     public void setupDefaultTimingsListener() {
         Project project = ProjectBuilder.builder().build()
-        TimingsListener listener = BuildTimerPlugin.timingsListener
+        TimingsListener listener = new TimingsListener()
 
         Task task = project.tasks.create("task")
         listener.beforeExecute(task)
@@ -28,7 +30,7 @@ class BuildTimerPluginTest {
     @Test
     public void setupCustomTimingsListener() {
         Project project = ProjectBuilder.builder().build()
-        TimingsListener listener = BuildTimerPlugin.timingsListener
+        TimingsListener listener = new TimingsListener()
         project.apply plugin: 'net.jokubasdargis.build-timer'
 
         def customTime = 60L
