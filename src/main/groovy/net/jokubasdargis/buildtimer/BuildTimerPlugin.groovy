@@ -5,22 +5,16 @@ import org.gradle.api.Project
 
 class BuildTimerPlugin implements Plugin<Project> {
 
+    public static final String TAG = 'taggedByTimerPlugin'
+
     @Override
     void apply(Project project) {
         project.extensions.create(BuildTimerPluginExtension.NAME, BuildTimerPluginExtension)
-        project.afterEvaluate {
-            addTimingsListener(project)
+
+        if (project.rootProject.hasProperty(TAG) == false) {
+            project.gradle.addListener(new TimingsListener())
+            project.rootProject.ext[TAG] = true
         }
     }
 
-    static TimingsListener addTimingsListener(Project project) {
-        final BuildTimerPluginExtension extension = project.extensions
-                .findByType(BuildTimerPluginExtension);
-        final long reportAbove = extension != null ?
-                extension.reportAbove : BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE;
-        final TimingsListener listener = new TimingsListener(reportAbove);
-        project.gradle.addListener(listener)
-
-        return listener
-    }
 }

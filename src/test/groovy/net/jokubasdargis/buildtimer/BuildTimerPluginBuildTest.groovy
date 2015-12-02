@@ -1,6 +1,5 @@
 package net.jokubasdargis.buildtimer
 
-import static net.jokubasdargis.buildtimer.BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 import org.gradle.testkit.runner.GradleRunner
@@ -14,20 +13,15 @@ class BuildTimerPluginBuildTest {
     @Rule public final TemporaryFolder testProjectDir = new TemporaryFolder()
 
     File buildFile
-    List<File> pluginClasspath
 
     @Before
     public void setUp() {
         buildFile = testProjectDir.newFile('build.gradle')
+    }
 
-        def pluginClasspathResource = getClass()
-                .classLoader.findResource("plugin-classpath.txt")
-        if (pluginClasspathResource == null) {
-            throw new IllegalStateException(
-                    "Did not find plugin classpath resource, run `testClasses` build task.")
-        }
-
-        pluginClasspath = pluginClasspathResource.readLines().collect { new File(it) }
+    private List<File> getPluginClasspath() {
+        System.getProperty("java.class.path").split(File.pathSeparator)
+                .collect { new File(it) }
     }
 
     @Test
@@ -50,7 +44,7 @@ class BuildTimerPluginBuildTest {
                 .withPluginClasspath(pluginClasspath)
                 .build()
 
-        assert result.output.contains("Task timings over ${DEFAULT_REPORT_ABOVE}ms:")
+        assert result.output.contains("Task timings over threshold:")
         // cannot check exact timing string logged as it will always be slightly different
         assert result.output.contains("longTask took")
         assert result.task(':longTask').outcome == SUCCESS
@@ -82,7 +76,7 @@ class BuildTimerPluginBuildTest {
                 .withPluginClasspath(pluginClasspath)
                 .build()
 
-        assert result.output.contains("Task timings over ${DEFAULT_REPORT_ABOVE}ms:")
+        assert result.output.contains("Task timings over threshold:")
         assert result.output.contains("longTask1 took")
         assert result.output.contains("longTask2 took")
         assert result.task(':longTask1').outcome == SUCCESS
@@ -115,7 +109,7 @@ class BuildTimerPluginBuildTest {
                 .withPluginClasspath(pluginClasspath)
                 .build()
 
-        assert result.output.contains("Task timings over ${customAbove}ms:")
+        assert result.output.contains("Task timings over threshold:")
         assert result.output.contains("longTask took")
         assert result.task(':longTask').outcome == SUCCESS
     }
@@ -125,6 +119,10 @@ class BuildTimerPluginBuildTest {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
+            }
+
+            buildTimer {
+                reportAbove = 1000
             }
 
             task quickTask {
@@ -140,8 +138,55 @@ class BuildTimerPluginBuildTest {
                 .withPluginClasspath(pluginClasspath)
                 .build()
 
-        assert !result.output.contains("Task timings over ${DEFAULT_REPORT_ABOVE}ms:")
+        assert !result.output.contains("Task timings over threshold:")
         assert !result.output.contains("quickTask took")
         assert result.task(':quickTask').outcome == SUCCESS
     }
+
+    @Test
+    public void combinedReportWithSubprojectBuild() {
+        buildFile << """
+            plugins {
+                id 'net.jokubasdargis.build-timer'
+            }
+
+            buildTimer {
+                reportAbove = 250
+            }
+
+            task longTask {
+                doLast {
+                    Thread.sleep(260)
+                }
+            }
+        """
+
+        testProjectDir.newFile('settings.gradle') << "include 'submodule'"
+        new File(testProjectDir.newFolder('submodule'), 'build.gradle') << """
+            apply plugin: 'net.jokubasdargis.build-timer'
+
+            buildTimer {
+                reportAbove = 100
+            }
+
+            task submoduleLongTask {
+                 doLast {
+                    Thread.sleep(110)
+                 }
+            }
+"""
+
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('longTask', 'submoduleLongTask')
+                .withPluginClasspath(pluginClasspath)
+                .build()
+
+        assert result.output.contains("Task timings over threshold:")
+        assert result.output.contains("longTask took")
+        assert result.output.contains("submoduleLongTask took")
+        assert result.task(':longTask').outcome == SUCCESS
+        assert result.task(':submodule:submoduleLongTask').outcome == SUCCESS
+    }
+
 }
