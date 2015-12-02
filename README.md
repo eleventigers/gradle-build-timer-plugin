@@ -4,7 +4,7 @@ Gradle Build Timer Plugin
 A Gradle plugin which reports timings of a project build and individual project tasks. See what tasks take the longest to run:
 
 ```
-Task timings over 50ms:
+Task timings over threshold:
     128ms  :app:mergeDebugAssets
    1099ms  :app:mergeDebugResources
     788ms  :app:processDebugResources
@@ -20,7 +20,7 @@ Usage
 Add the plugin to your `buildscript`'s `dependencies` section:
 
 ```groovy
-classpath 'net.jokubasdargis.buildtimer:gradle-plugin:0.1.1'
+classpath 'net.jokubasdargis.buildtimer:gradle-plugin:0.1.2'
 ```
 
 Apply the `build-timer` plugin:
