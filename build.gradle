@@ -17,6 +17,8 @@ apply plugin: 'com.bmuschko.nexus'
 group = 'net.jokubasdargis.buildtimer'
 version = '0.1.3-SNAPSHOT'
 
+sourceCompatibility = JavaVersion.VERSION_1_6
+
 repositories {
     mavenCentral()
 }
