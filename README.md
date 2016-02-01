@@ -20,7 +20,7 @@ Usage
 Add the plugin to your `buildscript`'s `dependencies` section:
 
 ```groovy
-classpath 'net.jokubasdargis.buildtimer:gradle-plugin:0.1.2'
+classpath 'net.jokubasdargis.buildtimer:gradle-plugin:0.2.0'
 ```
 
 Apply the `build-timer` plugin:
