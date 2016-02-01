@@ -1,5 +1,7 @@
 package net.jokubasdargis.buildtimer
 
+import java.util.regex.Pattern
+
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 import org.gradle.testkit.runner.GradleRunner
@@ -9,6 +11,9 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 class BuildTimerPluginBuildTest {
+
+    private static final String LABEL_OVER_THRESHOLD = "Task timings over threshold:"
+    private static final Pattern TIMING_REGEX = Pattern.compile("^\\d*ms {2,}:")
 
     @Rule public final TemporaryFolder testProjectDir = new TemporaryFolder()
 
@@ -81,6 +86,110 @@ class BuildTimerPluginBuildTest {
         assert result.output.contains("longTask2 took")
         assert result.task(':longTask1').outcome == SUCCESS
         assert result.task(':longTask2').outcome == SUCCESS
+    }
+
+    @Test
+    public void reportMultipleTimingsSortOrderDesc() {
+        buildFile << """
+            plugins {
+                id 'net.jokubasdargis.build-timer'
+            }
+
+            buildTimer {
+                reportAbove = 1L
+                sort = 'desc'
+            }
+
+            task longTask1 {
+                doLast {
+                    Thread.sleep(1)
+                }
+            }
+
+            task longTask2 {
+                doLast {
+                    Thread.sleep(50)
+                }
+            }
+
+            task longTask3 {
+                doLast {
+                    Thread.sleep(100)
+                }
+            }
+        """
+
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments('longTask1', 'longTask2', 'longTask3')
+            .withPluginClasspath(pluginClasspath)
+            .build()
+
+
+        assert result.task(':longTask1').outcome == SUCCESS
+        assert result.task(':longTask2').outcome == SUCCESS
+        assert result.task(':longTask3').outcome == SUCCESS
+
+        def output = result.output;
+
+        def expected = ["longTask3", "longTask2", "longTask1"];
+        def actual = output
+            .substring(output.indexOf(LABEL_OVER_THRESHOLD) + LABEL_OVER_THRESHOLD.length() + 1)
+            .tokenize("\n").collect{ it.trim().replaceFirst(TIMING_REGEX, "") }
+
+        assert expected.equals(actual)
+    }
+
+    @Test
+    public void reportMultipleTimingsSortOrderAsc() {
+        buildFile << """
+            plugins {
+                id 'net.jokubasdargis.build-timer'
+            }
+
+            buildTimer {
+                reportAbove = 1L
+                sort = 'asc'
+            }
+
+            task longTask1 {
+                doLast {
+                    Thread.sleep(100)
+                }
+            }
+
+            task longTask2 {
+                doLast {
+                    Thread.sleep(1)
+                }
+            }
+
+            task longTask3 {
+                doLast {
+                    Thread.sleep(50)
+                }
+            }
+        """
+
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments('longTask1', 'longTask2', 'longTask3')
+            .withPluginClasspath(pluginClasspath)
+            .build()
+
+
+        assert result.task(':longTask1').outcome == SUCCESS
+        assert result.task(':longTask2').outcome == SUCCESS
+        assert result.task(':longTask3').outcome == SUCCESS
+
+        def output = result.output;
+
+        def expected = ["longTask2", "longTask3", "longTask1"];
+        def actual = output
+            .substring(output.indexOf(LABEL_OVER_THRESHOLD) + LABEL_OVER_THRESHOLD.length() + 1)
+            .tokenize("\n").collect{ it.trim().replaceFirst(TIMING_REGEX, "") }
+
+        assert expected.equals(actual)
     }
 
     @Test
@@ -174,7 +283,7 @@ class BuildTimerPluginBuildTest {
                     Thread.sleep(110)
                  }
             }
-"""
+        """
 
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
