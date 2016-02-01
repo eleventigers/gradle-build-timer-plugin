@@ -12,8 +12,8 @@ import org.gradle.util.Clock
 
 class TimingsListener implements TaskExecutionListener, BuildListener {
 
-    private BuildTimerPlugin plugin;
-    private Map<Task, Timing> timings = Collections.synchronizedMap(new LinkedHashMap())
+    private final BuildTimerPlugin plugin
+    private final Map<Task, Timing> timings = Collections.synchronizedMap(new LinkedHashMap())
 
     TimingsListener(BuildTimerPlugin plugin) {
         this.plugin = plugin
@@ -67,12 +67,12 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
 
     private static class Timing {
 
-        private static final def ORDER_BY_MS_DESC = new OrderBy<Timing>([{ -it.ms }])
-        private static final def ORDER_BY_MS_ASC = new OrderBy<Timing>([{ it.ms }])
-        private static final def ORDER_BY_NONE = new OrderBy();
+        private static final ORDER_BY_MS_DESC = new OrderBy<Timing>([{ -it.ms }])
+        private static final ORDER_BY_MS_ASC = new OrderBy<Timing>([{ it.ms }])
+        private static final ORDER_BY_NONE = new OrderBy();
 
-        private Task task
-        private Clock clock
+        private final Task task
+        private final Clock clock
         private boolean report
         private long ms
 
@@ -98,14 +98,15 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
 
         static Comparator<Timing> orderByMsFor(SortOrder sortOrder) {
             switch (sortOrder) {
-                case SortOrder.NONE:
-                    return ORDER_BY_NONE;
-                    break;
                 case SortOrder.ASC:
                     return ORDER_BY_MS_ASC;
                     break;
                 case SortOrder.DESC:
                     return ORDER_BY_MS_DESC;
+                    break;
+                case SortOrder.NONE:
+                default:
+                    return ORDER_BY_NONE;
                     break;
             }
         }

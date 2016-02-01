@@ -29,10 +29,11 @@ Apply the `build-timer` plugin:
 apply plugin: 'net.jokubasdargis.build-timer'
 ```
 
-Optionally configure the lowest time threshold (in ms) this plugin should report above:
+Optionally configure the plugin:
 
 ```groovy
 buildTimer {
-    reportAbove = 100L // Default is 50L
+    reportAbove = 100L // The lowest time threshold (in ms) this plugin should report above, default is 50L
+    sort = 'asc' // Sort timings by ms, possible values: 'none', 'asc', 'desc'
 }
 ```
