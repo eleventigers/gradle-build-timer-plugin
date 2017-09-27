@@ -8,12 +8,15 @@ import org.gradle.api.execution.TaskExecutionListener
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.TaskState
-import org.gradle.util.Clock
+import org.gradle.internal.time.Timer
+import org.gradle.internal.time.Time
 
-class TimingsListener implements TaskExecutionListener, BuildListener {
+import java.util.concurrent.ConcurrentHashMap
+
+final class TimingsListener implements TaskExecutionListener, BuildListener {
 
     private final BuildTimerPlugin plugin
-    private final Map<Task, Timing> timings = Collections.synchronizedMap(new LinkedHashMap())
+    final Map<Task, Timing> timings = new ConcurrentHashMap<>()
 
     TimingsListener(BuildTimerPlugin plugin) {
         this.plugin = plugin
@@ -65,20 +68,20 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
     @Override
     void settingsEvaluated(Settings settings) {}
 
-    private static class Timing {
+    static final class Timing {
 
         private static final ORDER_BY_MS_DESC = new OrderBy<Timing>([{ -it.ms }])
         private static final ORDER_BY_MS_ASC = new OrderBy<Timing>([{ it.ms }])
-        private static final ORDER_BY_NONE = new OrderBy();
+        private static final ORDER_BY_NONE = new OrderBy()
 
         private final Task task
-        private final Clock clock
+        private final Timer timer
         private boolean report
         private long ms
 
         Timing(Task task) {
             this.task = task
-            this.clock = new Clock()
+            this.timer = Time.startTimer()
         }
 
         String getPath() {
@@ -86,11 +89,11 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
         }
 
         void complete() {
-            ms = clock.timeInMs
+            ms = timer.elapsedMillis
             report = (ms > getReportAboveForTask())
         }
 
-        private long getReportAboveForTask() {
+        long getReportAboveForTask() {
             BuildTimerPluginExtension extension = task.project.extensions.findByType(
                     BuildTimerPluginExtension)
             extension?.reportAbove ?: BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE
@@ -100,14 +103,14 @@ class TimingsListener implements TaskExecutionListener, BuildListener {
             switch (sortOrder) {
                 case SortOrder.ASC:
                     return ORDER_BY_MS_ASC;
-                    break;
+                    break
                 case SortOrder.DESC:
                     return ORDER_BY_MS_DESC;
-                    break;
+                    break
                 case SortOrder.NONE:
                 default:
                     return ORDER_BY_NONE;
-                    break;
+                    break
             }
         }
     }

@@ -20,17 +20,17 @@ class BuildTimerPluginBuildTest {
     File buildFile
 
     @Before
-    public void setUp() {
+    void setUp() {
         buildFile = testProjectDir.newFile('build.gradle')
     }
 
-    private List<File> getPluginClasspath() {
+    private static List<File> getPluginClasspath() {
         System.getProperty("java.class.path").split(File.pathSeparator)
                 .collect { new File(it) }
     }
 
     @Test
-    public void reportTimingsAboveDefault() {
+    void reportTimingsAboveDefault() {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
@@ -56,7 +56,7 @@ class BuildTimerPluginBuildTest {
     }
 
     @Test
-    public void reportMultipleTimingsAboveDefault() {
+    void reportMultipleTimingsAboveDefault() {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
@@ -89,7 +89,7 @@ class BuildTimerPluginBuildTest {
     }
 
     @Test
-    public void reportMultipleTimingsSortOrderDesc() {
+    void reportMultipleTimingsSortOrderDesc() {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
@@ -132,16 +132,16 @@ class BuildTimerPluginBuildTest {
 
         def output = result.output;
 
-        def expected = ["longTask3", "longTask2", "longTask1"];
+        def expected = ["longTask3", "longTask2", "longTask1"]
         def actual = output
             .substring(output.indexOf(LABEL_OVER_THRESHOLD) + LABEL_OVER_THRESHOLD.length() + 1)
             .tokenize("\n").collect{ it.trim().replaceFirst(TIMING_REGEX, "") }
 
-        assert expected.equals(actual)
+        assert expected == actual
     }
 
     @Test
-    public void reportMultipleTimingsSortOrderAsc() {
+    void reportMultipleTimingsSortOrderAsc() {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
@@ -160,7 +160,7 @@ class BuildTimerPluginBuildTest {
 
             task longTask2 {
                 doLast {
-                    Thread.sleep(1)
+                    Thread.sleep(10)
                 }
             }
 
@@ -184,16 +184,16 @@ class BuildTimerPluginBuildTest {
 
         def output = result.output;
 
-        def expected = ["longTask2", "longTask3", "longTask1"];
+        def expected = ["longTask2", "longTask3", "longTask1"]
         def actual = output
             .substring(output.indexOf(LABEL_OVER_THRESHOLD) + LABEL_OVER_THRESHOLD.length() + 1)
             .tokenize("\n").collect{ it.trim().replaceFirst(TIMING_REGEX, "") }
 
-        assert expected.equals(actual)
+        assert expected == actual
     }
 
     @Test
-    public void reportTimingsAboveCustom() {
+    void reportTimingsAboveCustom() {
         def customAbove = 100L
 
         buildFile << """
@@ -224,7 +224,7 @@ class BuildTimerPluginBuildTest {
     }
 
     @Test
-    public void skipReportTimingsBelowDefault() {
+    void skipReportTimingsBelowDefault() {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
@@ -253,7 +253,7 @@ class BuildTimerPluginBuildTest {
     }
 
     @Test
-    public void combinedReportWithSubprojectBuild() {
+    void combinedReportWithSubprojectBuild() {
         buildFile << """
             plugins {
                 id 'net.jokubasdargis.build-timer'
