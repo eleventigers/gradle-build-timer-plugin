@@ -8,7 +8,7 @@ import org.junit.Test
 class BuildTimerPluginTest {
 
     @Test
-    public void pluginApplies() {
+    void pluginApplies() {
         Project project = ProjectBuilder.builder().build()
         project.apply plugin: 'net.jokubasdargis.build-timer'
 
@@ -16,7 +16,7 @@ class BuildTimerPluginTest {
     }
 
     @Test
-    public void setupDefaultTimingsListener() {
+    void setupDefaultTimingsListener() {
         Project project = ProjectBuilder.builder().build()
         TimingsListener listener = new TimingsListener()
 
@@ -24,11 +24,11 @@ class BuildTimerPluginTest {
         listener.beforeExecute(task)
 
         TimingsListener.Timing timing = listener.timings.values().first()
-        timing.getReportAboveForTask() == BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE;
+        timing.getReportAboveForTask() == BuildTimerPluginExtension.DEFAULT_REPORT_ABOVE
     }
 
     @Test
-    public void setupCustomTimingsListener() {
+    void setupCustomTimingsListener() {
         Project project = ProjectBuilder.builder().build()
         TimingsListener listener = new TimingsListener()
         project.apply plugin: 'net.jokubasdargis.build-timer'

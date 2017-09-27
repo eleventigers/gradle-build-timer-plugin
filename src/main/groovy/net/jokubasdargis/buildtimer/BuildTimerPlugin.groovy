@@ -14,7 +14,7 @@ class BuildTimerPlugin implements Plugin<Project> {
         extension = project.extensions.create(
             BuildTimerPluginExtension.NAME, BuildTimerPluginExtension)
 
-        if (project.rootProject.hasProperty(TAG) == false) {
+        if (!project.rootProject.hasProperty(TAG)) {
             project.gradle.addListener(new TimingsListener(this))
             project.rootProject.ext[TAG] = true
         }
